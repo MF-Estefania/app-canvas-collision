@@ -18,7 +18,7 @@ class Circle {
         this.text = text;
         this.speed = speed;
         this.dx = (Math.random() > 0.5 ? 1 : -1) * this.speed; // Dirección X aleatoria
-        this.dy = (Math.random() > 0.5 ? 1 : -1) * this.speed; // Dirección Y aleatoria
+        this.dy = -this.speed; // Siempre moverse hacia arriba inicialmente
         this.colliding = false; // Bandera para colisiones
         this.flashDuration = 0; // Temporizador para el "flash" de color azul
     }
@@ -45,10 +45,10 @@ class Circle {
         if (this.posX + this.radius > window_width || this.posX - this.radius < 0) {
             this.dx = -this.dx;
         }
-        // Actualizar la posición Y
+        // Actualizar la posición Y (hacia arriba o abajo dependiendo de la dirección)
         this.posY += this.dy;
-        // Cambiar la dirección si el círculo llega al borde del canvas en Y
-        if (this.posY + this.radius > window_height || this.posY - this.radius < 0) {
+        // Cambiar la dirección si el círculo llega al borde superior o inferior del canvas en Y
+        if (this.posY - this.radius < 0 || this.posY + this.radius > window_height) {
             this.dy = -this.dy;
         }
 
@@ -106,7 +106,7 @@ function generateCircles(n) {
     for (let i = 0; i < n; i++) {
         let radius = Math.random() * 30 + 20; // Radio entre 20 y 50
         let x = Math.random() * (window_width - radius * 2) + radius;
-        let y = Math.random() * (window_height - radius * 2) + radius;
+        let y = window_height - radius; // Iniciar cerca del borde inferior
         let color = `#${Math.floor(Math.random() * 16777215).toString(16)}`; // Color aleatorio
         let speed = Math.random() * 4 + 1; // Velocidad entre 1 y 5
         let text = `C${i + 1}`; // Etiqueta del círculo
@@ -122,6 +122,22 @@ function animate() {
     });
     requestAnimationFrame(animate); // Repetir la animación
 }
+
+// Detectar si el clic del mouse está dentro de un círculo
+function isInsideCircle(circle, mouseX, mouseY) {
+    const dx = mouseX - circle.posX;
+    const dy = mouseY - circle.posY;
+    return Math.sqrt(dx * dx + dy * dy) < circle.radius;
+}
+
+// Evento para eliminar el círculo al hacer clic
+canvas.addEventListener("click", function(event) {
+    const mouseX = event.clientX;
+    const mouseY = event.clientY;
+
+    // Buscar el círculo en el que se hizo clic y eliminarlo
+    circles = circles.filter(circle => !isInsideCircle(circle, mouseX, mouseY));
+});
 
 // Generar N círculos y comenzar la animación
 generateCircles(10); // Puedes cambiar el número de círculos aquí
